@@ -37,11 +37,18 @@ $ python run.py
 
 token验证
 --------------
+
 ！[](./image/verify1.jpg)
+
 chrome查到异步提交的参数，全局搜索，反混淆找到js处理函数
+
 ![](./image/verify2.jpg)
+
 ![](./image/verify3.jpg)
 python处理
+
 ![](./image/verify4.jpg)
+
 ![](./image/veryfy5.jpg)
+
 perfect
