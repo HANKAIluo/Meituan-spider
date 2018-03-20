@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Description:
+- 多线程，队列操作，断点续传
+
+author:https://github.com/HANKAIluo
+2018.3.18
+"""
+
 import threading
 from queue import Queue
 from crawl import Crawl
@@ -58,19 +66,24 @@ class MasterThread:
 
     def start(self):
         """运行"""
-        boot_threading = threading.Thread(target=self.send)
-        boot_threading.start()
-        boot_threading.join()
+        if Datafile.is_exit():  #断点续传
+            link = Datafile.open_csv()
+            for t in link:
+                self.Urlqueue.put(t[0])
+        else:
+            boot_threading = threading.Thread(target=self.send)
+            boot_threading.start()
+            boot_threading.join()
 
-        for i in range(self.count['count']):
-            t = threading.Thread(target=self.recv,)
-            t.start()
-            t.join()
-        if self.count['failed_count'] != 0:
-            for i in range(self.count['failed_count']):
-                t = threading.Thread(target=self.recv, )
+            for i in range(self.count['count']):
+                t = threading.Thread(target=self.recv,)
                 t.start()
                 t.join()
+            if self.count['failed_count'] != 0:
+                for i in range(self.count['failed_count']):
+                    t = threading.Thread(target=self.recv, )
+                    t.start()
+                    t.join()
         self.count['count'] = self.Urlqueue.qsize()
         self.count['failed_count'] = 0
 
@@ -81,15 +94,17 @@ class MasterThread:
         for t in thread_list:
             t.start()
             t.join()
-        Datafile.save()
+        Datafile.save('data')
+        while not self.Urlqueue.empty():
+            sa = [self.Urlqueue.get()]
+            Datafile.dumps(sa)
+        Datafile.save('rest')
         print('*******************')
         self.log()
-        print('结束时间:',self.count['end_time'])
-
 
     def run(self):
         """工作线程"""
-        while self.Urlqueue.qsize():
+        while Datafile.d.qsize() < 10000:
             if not self.Urlqueue.empty():
                 url = self.Urlqueue.get()
                 data = self.Crawl.crawl(url)
@@ -97,10 +112,11 @@ class MasterThread:
                 print(self.Crawl.proxy)
                 if data:
                     self.count['sucess_count'] += 1
+                    Datafile.dumps(data)
                 else:
                     self.count['failed_count'] += 1
                     self.Urlqueue.put(url)
-            Datafile.dumps(data)
+            #Datafile.dumps(data)
             self.log()
 
     def log(self):
@@ -115,7 +131,7 @@ class MasterThread:
         print('————————————————————')
         if starttime == self.endtime:
             self.Crawl.proxy = next(proxies)
-            self.endtime = starttime + 8
+            self.endtime = starttime + 60
         if self.Urlqueue.empty():
             self.count['end_time'] = time.asctime()
             print('结束时间:',self.count['end_time'])
