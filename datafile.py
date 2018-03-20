@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Description:
+- 获取数据，加入csv文件
+
+author:https://github.com/HANKAIluo
+2018.3.18
+"""
+
 import os, sys
 import csv
 import threading
@@ -25,23 +36,29 @@ class Datafile(Singleton):
 
     def is_exit(self):
         """csv文件是否存在"""
-        for i in self.LETTERS:
-            file_name = self._flie_directory + 'data' + self._suffix
-            if not os.path.exists(file_name):
-                with open(file_name, 'w') as f:
-                    writer = csv.writer(f)
-                    writer.writerow(['地区', '网址', '酒店名称', '地址', '价格', '电话','最低价格'])
-                    f.close()
-        return True
+        file_name = self._flie_directory + 'rest' + self._suffix
+        if os.path.exists(file_name):
+            return True
+
+    def open_csv(self,):
+        f = open(self._flie_directory+'rest'+self._suffix, 'r',newline='')
+        reader = csv.reader(f)
+        url = []
+        for i in reader:
+            url.append(i)
+        f.close()
+        os.remove(self._flie_directory+'rest'+self._suffix)
+        return url
+
     def dumps(self, content):
         self.d.put(content)
 
-    def save(self):
+    def save(self, filename):
         """将数据存进csv文件"""
-        with open(self._flie_directory+'A'+self._suffix, 'w', newline='') as w:
+        with open(self._flie_directory+filename+self._suffix, 'a', newline='') as w:
             writers = csv.writer(w)
-            li = ('地区','网址', '酒店', '地址', '价格', '电话','最低价格')
-            writers.writerow(li)
+            #li = ('地区','网址', '酒店', '地址', '评分', '电话','最低价格')
+            #writers.writerow(li)
             while True:
                 if self.d.empty():
                     break
@@ -51,6 +68,5 @@ class Datafile(Singleton):
 
 if __name__ == '__main__':
     data = Datafile()
-    data.dumps(['北京', 'http://hotel.meituan.com/92489585/', '99优选酒店(虎坊桥地铁站店)', '西城区腊竹胡同59号（近地铁7号线虎坊桥C口）', '4.3', '010-83104641', 168.0])
-    data.dumps(['12', 11])
-    data.save()
+    data.is_exit()
+    data.open_csv()

@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Description:
+- 爬取城市所有酒店网址，模拟_token验证，爬取酒店数据
+
+author:https://github.com/HANKAIluo
+2018.3.18
+"""
+
 import requests, zlib, base64
 import random, re, json
 from datetime import datetime
@@ -98,7 +109,7 @@ class Crawl(Singleton):
                             url = url + 'pn' + t + '/'
                             response = requests.get(url, headers)
                             response.encoding = 'utf-8'
-                            bs = BeautifulSoup(response.text,'lxml')
+                            bs = BeautifulSoup(response.text,)#'lxml'
                         except:
                             pass
                         if response.status_code == 200:
@@ -115,7 +126,7 @@ class Crawl(Singleton):
         """抓取酒店数据"""
         data_list = []
         try:
-            response = requests.get(url, headers=headers, proxies=self.proxy, timeout=2.0)
+            response = requests.get(url, headers=headers, timeout=2.0)#proxies=self.proxy
             response.encoding = 'utf-8'
             bs = BeautifulSoup(response.text, 'lxml')
             data = [i.text for i in bs.findAll('span') ]
@@ -125,6 +136,7 @@ class Crawl(Singleton):
             print(e)
             print(url)
             return None
+        print(url)
         cookies_iuuid = ['93AB5D4FEB3D1BFFF9B7727E5ECE71CF13A51383CD6ADB169C43832A6BB41843',
                          '8A8E20A923D42E033BC3505E3460BCC25AEA4D933CE3F233B19679BB0EEC89D4',
                          'C68174784AF5C11CC2F127774CC8BA60FB5E766509A7DCA8F4ECDFF59B45076F',
@@ -155,7 +167,7 @@ class Crawl(Singleton):
         taken["start"] + "&end=" + taken["end"] + "&uuid=" + taken["uuid"] + "&_token=" + \
         self.url_encode(_tokon).decode()
         try:
-            res = requests.get(t, headers=headers, proxies=self.proxy, timeout=2.0)
+            res = requests.get(t, headers=headers, timeout=2.0)#proxies=self.proxy
             data_list.append(int(re.findall(r'lowestPrice":[0-9]+', res.text)[0][13:]) / 100)  # 最低价格（并没有神马卵用）
         except Exception as e:
             print(e)
@@ -169,5 +181,5 @@ if __name__ == '__main__':
     n =Crawl()
     n.proxy=proxy
     t = n.get_hotel_list('http://hotel.meituan.com/beijing/')
-    #t=n.crawl(city='广州',url='http://hotel.meituan.com/1211661/')
+    t=n.crawl('http://hotel.meituan.com/1211661/')
     print(t)
