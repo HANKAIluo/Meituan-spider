@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Description:
+- 爬取免费IP，验证可用性放入csv文件，生成迭代器，没调用一次返回一个IP
+
+author:https://github.com/HANKAIluo
+2018.3.18
+"""
+
 import sys
 import requests, csv
 from bs4 import BeautifulSoup
