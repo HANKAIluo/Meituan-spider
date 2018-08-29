@@ -1,0 +1,89 @@
+﻿<!doctype html>
+
+<html lang="zh-CN">
+<title>token解码</title>
+<body>
+	<div id="container">
+		<input name="input-data" class="compress-data" placeholder="请输入_token" />
+		<button class="clickMe" onclick="clickMe()">提交</button>
+		<div style="color: blue">生成参数</div>
+		<div class="decompress-data"></div>
+		<div class="decompress-data"></div>
+	</div>
+</body>
+<style>
+	#container {
+		width: 500px;
+		margin: 0 auto;
+		text-align: center;
+	}
+	.compress-data {
+		width: 60%;
+		padding: 3px;
+		border-radius: 5px;
+		border: 1px solid #11aaee;
+	}
+	.clickMe {
+		display: block;
+		width: 80px;
+		margin: 10px auto;
+	}
+	.decompress-data {
+		color: red;
+	}
+</style>
+<script src="https://cdn.bootcss.com/pako/1.0.6/pako.js"></script>
+<script>
+var doc1 = document.getElementsByClassName('decompress-data')[0]	
+var doc2 = document.getElementsByClassName('decompress-data')[1]
+
+function token_decode (raw_data) {
+	let count = 0
+	return new Promise( (resolve, reject) => {
+		try {
+			let raw_base64 = atob(raw_data)
+			let compress_data = new Uint8Array(raw_data.length)
+			
+			for (let i=0; i<raw_data.length; i++) {
+				compress_data.set([parseInt(raw_base64.charCodeAt(i))], i)
+			}
+			let decompress_data = pako.inflate(compress_data, {to: 'string'})
+			decompress_data = JSON.parse(decompress_data)
+			if (decompress_data.sign && count === 0) {
+				token_decode(decompress_data.sign)
+					.then( sign => {
+						count += 1
+						delete(decompress_data.sign)
+						console.log({decompress_data, sign})
+						resolve({decompress_data, sign})
+					})
+					.catch( e => {
+						console.error(e)
+					})
+			} else {
+				resolve(decompress_data)
+			}
+		} catch(e) {
+			reject(e)
+		}
+	})
+
+}
+function clickMe () {
+	let input_data = document.getElementsByClassName('compress-data')[0].value
+	doc1.innerHTML = ''
+	doc2.innerHTML = ''
+	
+	input_data = decodeURIComponent(input_data)
+	token_decode(input_data)
+		.then( data => {
+			doc1.innerHTML = JSON.stringify(data.decompress_data)
+			doc2.innerHTML = JSON.stringify({sign: data.sign})
+		})
+		.catch( e => {
+			console.error(e)
+		})
+}
+
+</script>
+</html>
