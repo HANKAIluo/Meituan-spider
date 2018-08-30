@@ -8,6 +8,7 @@
 		<button class="clickMe" onclick="clickMe()">提交</button>
 		<div style="color: blue">生成参数</div>
 		<div class="decompress-data"></div>
+		<div style="color: blue">sign解码,解码后的字符串编码后替换生成参数的sign，再次编码可得到token</div>
 		<div class="decompress-data"></div>
 	</div>
 </body>
@@ -53,7 +54,7 @@ function token_decode (raw_data) {
 				token_decode(decompress_data.sign)
 					.then( sign => {
 						count += 1
-						delete(decompress_data.sign)
+						// delete(decompress_data.sign)
 						console.log({decompress_data, sign})
 						resolve({decompress_data, sign})
 					})

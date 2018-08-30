@@ -40,19 +40,22 @@ class Crawl(Singleton):
         d3 = int((d2 - d1).total_seconds() * 1000)
         return d3
 
-    def url_encode(self, data):
-        """token解码"""
-        if isinstance(data, str):
-            data = data.replace(" ", "").encode()
-            base_data = zlib.compress(data)
+    def url_encode(self, data, stringify=False):
+        """
+            token编码
+            data:       编码参数
+            stringify:  boolean,默认序列化
+        """
+        if (stringify == True):
+            base_data = zlib.compress(data.encode())
             data = base64.b64encode(base_data)
             return data
         else:
-            data = str(data)
-            return self.url_encode(data)
+            data = json.dumps(data).replace(' ', "")
+            return self.url_encode(data, True)
 
     def url_decode(self, data):
-        """token编码"""
+        """token解码"""
         if isinstance(data, str):
             data = base64.b64decode(data)
             base_data = zlib.decompress(data)
@@ -149,9 +152,9 @@ class Crawl(Singleton):
         taken["&utm_medium"] = "PC"
         taken["version_name"] = "7.3.0"
         taken["uuid"] = cookies_iuuid[random.randint(0,3)]
-        sign = "\"end=" + taken["end"] + "&poiId=" + taken["poiId"] + "&start=" + taken["start"] + "&type=1&" \
-                "utm_medium=PC&uuid=" + taken["uuid"] + "&version_name=" + taken["version_name"] +"\""
-        _tokon = json.dumps({"rId":100051,
+        sign = "end=" + taken["end"] + "&poiId=" + taken["poiId"] + "&start=" + taken["start"] + "&type=1&" \
+                "utm_medium=PC&uuid=" + taken["uuid"] + "&version_name=" + taken["version_name"]
+        _tokon = {"rId":100051,
                   "ts":self.getTime(),
                   "cts":self.getTime()+462,
                   "brVD":[1920,502],
@@ -161,7 +164,7 @@ class Crawl(Singleton):
                   "kT":[],
                   "aT":[],
                   "tT":[],
-                  "sign":self.url_encode(sign).decode()})
+                  "sign":self.url_encode(sign).decode()}
         t = "https://ihotel.meituan.com/productapi/v2/prepayList?type=1&utm_medium=PC&version_name=" \
                 "7.3.0&poiId=" + taken["poiId"] + "&start=" + \
         taken["start"] + "&end=" + taken["end"] + "&uuid=" + taken["uuid"] + "&_token=" + \
